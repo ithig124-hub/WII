@@ -1,4 +1,4 @@
-name: Build Wii Homebrew
+ame: Build Wii Homebrew
 
 on:
   push:
@@ -47,12 +47,14 @@ jobs:
         
     - name: Build Project
       run: |
+        cd wii-homebrew
         ls -la
         make clean
         make
         
     - name: Prepare Artifacts
       run: |
+        cd wii-homebrew
         ls -lh *.dol *.elf || echo "Checking build outputs..."
         cp wii-dashboard.dol boot.dol
         ls -lh *.dol
@@ -62,10 +64,10 @@ jobs:
       with:
         name: wii-homebrew-build
         path: |
-          wii-dashboard.dol
-          boot.dol
-          wii-dashboard.elf
-          meta.xml
+          wii-homebrew/wii-dashboard.dol
+          wii-homebrew/boot.dol
+          wii-homebrew/wii-dashboard.elf
+          wii-homebrew/meta.xml
         if-no-files-found: error
         
     - name: Build Summary
@@ -82,5 +84,4 @@ jobs:
         echo "2. Copy \`boot.dol\` to \`SD:/apps/wii-dashboard/\`" >> $GITHUB_STEP_SUMMARY
         echo "3. Copy \`meta.xml\` to the same folder" >> $GITHUB_STEP_SUMMARY
         echo "4. Launch from Homebrew Channel" >> $GITHUB_STEP_SUMMARY
-
 
