@@ -21,19 +21,13 @@ jobs:
         echo "/opt/devkitpro/devkitPPC/bin:$PATH" >> $GITHUB_PATH
         
     - name: Install Dependencies
-    run: |
-
-dkp-pacman -Syu --noconfirm
-
-dkp-pacman -S --noconfirm \
-
-wii-dev \
-
-ppc-libpng \
-
-ppc-libjpeg-turbo \
-
-ppc-zlib
+      run: |
+        dkp-pacman -Syu --noconfirm
+        dkp-pacman -S --noconfirm \
+          wii-dev \
+          ppc-libpng \
+          ppc-libjpeg-turbo \
+          ppc-zlib
           
     - name: Install GRRLIB
       run: |
