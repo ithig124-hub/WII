@@ -9,11 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     env:
       DEVKITPPC: /opt/devkitpro/devkitPPC
       DEVKITPRO: /opt/devkitpro
-      PATH: ${{ env.PATH }}:/opt/devkitpro/devkitPPC/bin:/opt/devkitpro/tools/bin:/opt/devkitpro/libogc/bin
+      PATH: /opt/devkitpro/devkitPPC/bin:/opt/devkitpro/tools/bin:/opt/devkitpro/libogc/bin:$PATH
 
     steps:
       - name: Checkout repository
@@ -30,8 +29,7 @@ jobs:
         run: mkdir -p build
 
       - name: Build Wii Homebrew
-        run: |
-          make
+        run: make
 
       - name: Upload DOL artifact
         uses: actions/upload-artifact@v4
