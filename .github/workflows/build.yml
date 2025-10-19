@@ -1,0 +1,31 @@
+name: Build Wii Homebrew
+
+on:
+  push:
+    branches: [ toWII ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install devkitPPC
+        run: |
+          sudo apt update
+          sudo apt install -y devkitpro-devkitppc
+          export DEVKITPPC=/opt/devkitPro/devkitPPC
+
+      - name: Build project
+        run: |
+          export DEVKITPPC=/opt/devkitPro/devkitPPC
+          make
+
+      - name: Upload DOL
+        uses: actions/upload-artifact@v3
+        with:
+          name: wii-dashboard-dol
+          path: wii-dashboard.dol
