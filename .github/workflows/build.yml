@@ -1,86 +1,88 @@
 name: Build Wii Homebrew
 
 on:
-  push:  # Triggers on push to ANY branch
-    pull_request:  # Triggers on pull requests to ANY branch
-      workflow_dispatch:  # Allow manual trigger
+  push:
+  pull_request:
+  workflow_dispatch:
 
-      jobs:
-        build:
-            runs-on: ubuntu-latest
-                container: devkitpro/devkitppc:latest
-                    
-                        steps:
-                            - name: Checkout Repository
-                                  uses: actions/checkout@v4
-                                        
-                                            - name: Setup Environment Variables
-                                                  run: |
-                                                          echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
-                                                                  echo "DEVKITPPC=/opt/devkitpro/devkitPPC" >> $GITHUB_ENV
-                                                                          echo "/opt/devkitpro/devkitPPC/bin:$PATH" >> $GITHUB_PATH
-                                                                                  
-                                                                                      - name: Install Dependencies
-                                                                                            run: |
-                                                                                                    dkp-pacman -Syu --noconfirm
-                                                                                                            dkp-pacman -S --noconfirm \
-                                                                                                                      wii-dev \
-                                                                                                                                ppc-libpng \
-                                                                                                                                          ppc-libjpeg-turbo \
-                                                                                                                                                    ppc-zlib
-                                                                                                                                                              
-                                                                                                                                                                  - name: Install GRRLIB
-                                                                                                                                                                        run: |
-                                                                                                                                                                                cd /tmp
-                                                                                                                                                                                        git clone https://github.com/GRRLIB/GRRLIB.git
-                                                                                                                                                                                                cd GRRLIB/GRRLIB
-                                                                                                                                                                                                        make clean
-                                                                                                                                                                                                                make
-                                                                                                                                                                                                                        make install
-                                                                                                                                                                                                                        
-                                                                                                                                                                                                                            - name: Verify Installation
-                                                                                                                                                                                                                                  run: |
-                                                                                                                                                                                                                                          echo "DevkitPPC: $DEVKITPPC"
-                                                                                                                                                                                                                                                  ls -la $DEVKITPPC || echo "DevkitPPC directory not found"
-                                                                                                                                                                                                                                                          echo "GRRLIB installed:"
-                                                                                                                                                                                                                                                                  ls -la /opt/devkitpro/portlibs/ppc/lib/libgrrlib* || echo "Checking GRRLIB installation..."
-                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                              - name: Build Project
-                                                                                                                                                                                                                                                                                    run: |
-                                                                                                                                                                                                                                                                                            ls -la
-                                                                                                                                                                                                                                                                                                    make clean
-                                                                                                                                                                                                                                                                                                            make
-                                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                                        - name: Prepare Artifacts
-                                                                                                                                                                                                                                                                                                                              run: |
-                                                                                                                                                                                                                                                                                                                                      ls -lh *.dol *.elf || echo "Checking build outputs..."
-                                                                                                                                                                                                                                                                                                                                              # Create boot.dol (ready for SD card)
-                                                                                                                                                                                                                                                                                                                                                      cp wii-dashboard.dol boot.dol
-                                                                                                                                                                                                                                                                                                                                                              ls -lh *.dol
-                                                                                                                                                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                                                                                                                          - name: Upload Build Artifacts
-                                                                                                                                                                                                                                                                                                                                                                                uses: actions/upload-artifact@v4
-                                                                                                                                                                                                                                                                                                                                                                                      with:
-                                                                                                                                                                                                                                                                                                                                                                                              name: wii-homebrew-build
-                                                                                                                                                                                                                                                                                                                                                                                                      path: |
-                                                                                                                                                                                                                                                                                                                                                                                                                wii-dashboard.dol
-                                                                                                                                                                                                                                                                                                                                                                                                                          boot.dol
-                                                                                                                                                                                                                                                                                                                                                                                                                                    wii-dashboard.elf
-                                                                                                                                                                                                                                                                                                                                                                                                                                              meta.xml
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      if-no-files-found: error
-                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  - name: Build Summary
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        run: |
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                echo "## Build Successful! 🎮" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo "" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                echo "### Generated Files:" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo "- \`wii-dashboard.dol\` - Main executable (original name)" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                echo "- \`boot.dol\` - Renamed for SD card deployment" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo "- \`wii-dashboard.elf\` - Debug symbols" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                echo "" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo "### Installation:" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                echo "1. Download the artifacts from this workflow run" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo "2. Copy \`boot.dol\` to \`SD:/apps/wii-dashboard/\`" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                echo "3. Copy \`meta.xml\` to the same folder" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        echo "4. Launch from Homebrew Channel" >> $GITHUB_STEP_SUMMARY
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitppc:latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Environment Variables
+      run: |
+        echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
+        echo "DEVKITPPC=/opt/devkitpro/devkitPPC" >> $GITHUB_ENV
+        echo "/opt/devkitpro/devkitPPC/bin:$PATH" >> $GITHUB_PATH
+        
+    - name: Install Dependencies
+      run: |
+        dkp-pacman -Syu --noconfirm
+        dkp-pacman -S --noconfirm \
+          wii-dev \
+          ppc-libpng \
+          ppc-libjpeg-turbo \
+          ppc-zlib
+          
+    - name: Install GRRLIB
+      run: |
+        cd /tmp
+        git clone https://github.com/GRRLIB/GRRLIB.git
+        cd GRRLIB/GRRLIB
+        make clean
+        make
+        make install
+        
+    - name: Verify Installation
+      run: |
+        echo "DevkitPPC: $DEVKITPPC"
+        ls -la $DEVKITPPC || echo "DevkitPPC directory not found"
+        echo "GRRLIB installed:"
+        ls -la /opt/devkitpro/portlibs/ppc/lib/libgrrlib* || echo "Checking GRRLIB installation..."
+        
+    - name: Build Project
+      run: |
+        ls -la
+        make clean
+        make
+        
+    - name: Prepare Artifacts
+      run: |
+        ls -lh *.dol *.elf || echo "Checking build outputs..."
+        cp wii-dashboard.dol boot.dol
+        ls -lh *.dol
+        
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: wii-homebrew-build
+        path: |
+          wii-dashboard.dol
+          boot.dol
+          wii-dashboard.elf
+          meta.xml
+        if-no-files-found: error
+        
+    - name: Build Summary
+      run: |
+        echo "## Build Successful! 🎮" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Generated Files:" >> $GITHUB_STEP_SUMMARY
+        echo "- \`wii-dashboard.dol\` - Main executable (original name)" >> $GITHUB_STEP_SUMMARY
+        echo "- \`boot.dol\` - Renamed for SD card deployment" >> $GITHUB_STEP_SUMMARY
+        echo "- \`wii-dashboard.elf\` - Debug symbols" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Installation:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Download the artifacts from this workflow run" >> $GITHUB_STEP_SUMMARY
+        echo "2. Copy \`boot.dol\` to \`SD:/apps/wii-dashboard/\`" >> $GITHUB_STEP_SUMMARY
+        echo "3. Copy \`meta.xml\` to the same folder" >> $GITHUB_STEP_SUMMARY
+        echo "4. Launch from Homebrew Channel" >> $GITHUB_STEP_SUMMARY
+
+==========================================================
+END - COPY EVERYTHING ABOVE (UP TO "Homebrew Channel")
+==========================================================
