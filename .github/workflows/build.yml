@@ -83,6 +83,4 @@ jobs:
         echo "3. Copy \`meta.xml\` to the same folder" >> $GITHUB_STEP_SUMMARY
         echo "4. Launch from Homebrew Channel" >> $GITHUB_STEP_SUMMARY
 
-==========================================================
-END - COPY EVERYTHING ABOVE (UP TO "Homebrew Channel")
-==========================================================
+
