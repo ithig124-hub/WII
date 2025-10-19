@@ -1,9 +1,6 @@
 #include "graphics.h"
 #include <grrlib.h>
 
-static void* xfb = NULL;
-static GXRModeObj *rmode = NULL;
-
 // Particle system
 #define MAX_PARTICLES 50
 typedef struct {
@@ -17,32 +14,7 @@ typedef struct {
 static Particle particles[MAX_PARTICLES];
 
 void initGraphics() {
-    // Initialize the video system
-    VIDEO_Init();
-    
-    // Obtain the preferred video mode from the system
-    rmode = VIDEO_GetPreferredMode(NULL);
-    
-    // Allocate memory for the display in the uncached region
-    xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-    
-    // Set up the video registers with the chosen mode
-    VIDEO_Configure(rmode);
-    
-    // Tell the video hardware where our display memory is
-    VIDEO_SetNextFramebuffer(xfb);
-    
-    // Make the display visible
-    VIDEO_SetBlack(FALSE);
-    
-    // Flush the video register changes to the hardware
-    VIDEO_Flush();
-    
-    // Wait for Video setup to complete
-    VIDEO_WaitVSync();
-    if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
-    
-    // Initialize GRRLIB
+    // Initialize GRRLIB (handles all video initialization)
     GRRLIB_Init();
     
     // Initialize particles
@@ -106,8 +78,8 @@ void drawGlassCircle(float x, float y, float radius, u32 baseColor) {
 
 void drawGradientCircle(float x, float y, float radius, u32 color1, u32 color2) {
     // Simple gradient effect by drawing concentric circles
-    for (float r = radius; r > 0; r -= 2.0f) {
-        float t = r / radius;
+    for (float rad = radius; rad > 0; rad -= 2.0f) {
+        float t = rad / radius;
         // Interpolate colors
         u8 r1 = (color1 >> 24) & 0xFF;
         u8 g1 = (color1 >> 16) & 0xFF;
@@ -119,13 +91,13 @@ void drawGradientCircle(float x, float y, float radius, u32 color1, u32 color2) 
         u8 b2 = (color2 >> 8) & 0xFF;
         u8 a2 = color2 & 0xFF;
         
-        u8 r = (u8)(r1 * t + r2 * (1 - t));
-        u8 g = (u8)(g1 * t + g2 * (1 - t));
-        u8 b = (u8)(b1 * t + b2 * (1 - t));
-        u8 a = (u8)(a1 * t + a2 * (1 - t));
+        u8 rc = (u8)(r1 * t + r2 * (1 - t));
+        u8 gc = (u8)(g1 * t + g2 * (1 - t));
+        u8 bc = (u8)(b1 * t + b2 * (1 - t));
+        u8 ac = (u8)(a1 * t + a2 * (1 - t));
         
-        u32 color = (r << 24) | (g << 16) | (b << 8) | a;
-        GRRLIB_Circle(x, y, r, color, 1);
+        u32 color = (rc << 24) | (gc << 16) | (bc << 8) | ac;
+        GRRLIB_Circle(x, y, rad, color, 1);
     }
 }
 
