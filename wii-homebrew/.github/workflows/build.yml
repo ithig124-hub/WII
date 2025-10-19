@@ -1,0 +1,38 @@
+name: Build Wii Homebrew
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DEVKITPPC: /opt/devkitpro/devkitPPC
+      DEVKITPRO: /opt/devkitpro
+      PATH: /opt/devkitpro/devkitPPC/bin:/opt/devkitpro/tools/bin:/opt/devkitpro/libogc/bin:$PATH
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install devkitPro
+        run: |
+          sudo mkdir -p /opt/devkitpro
+          sudo chown $USER /opt/devkitpro
+          git clone https://github.com/devkitPro/devkitPro.git /opt/devkitpro
+          /opt/devkitpro/devkitPro/devkitpro-base.sh
+
+      - name: Make build folder
+        run: mkdir -p build
+
+      - name: Build Wii Homebrew
+        run: make
+
+      - name: Upload DOL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wii-dashboard-dol
+          path: build/*.dol
