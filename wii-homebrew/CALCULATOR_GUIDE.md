@@ -1,4 +1,4 @@
-# Calculator Quick Reference Guide
+.# Calculator Quick Reference Guide
 
 ## ClassPad-Style Calculator for Wii
 
